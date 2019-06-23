@@ -353,6 +353,10 @@ contract FlightSuretyApp {
 
     }
 
+    function fetchFunding(address airline) external view returns(uint256) {
+        return flightSuretyData.fetchFunding(airline);
+    }
+
     //endregion
 }
 
@@ -372,4 +376,6 @@ contract FlightSuretyData {
     function registerFlight(address airline, string flightId, uint256 timestamp) external {}
     function setTestingMode(bool mode) external {}
     function flightSuretyInfo(address passenger, string flight) external returns(uint256){}
+
+    function fetchFunding(address airline) external returns(uint256){}
 }

@@ -27,6 +27,7 @@ contract FlightSuretyData is Ownable {
         bool isRegistered;      // Flag for testing existence in mapping
         address account;        // Ethereum account
         uint256 ownership;      // Track percentage of Smart Contract ownership based on initial contribution
+        uint256 funding;
     }
 
     struct Flight {
@@ -75,17 +76,15 @@ contract FlightSuretyData is Ownable {
     * @dev Constructor
     *      The deploying account becomes contractOwner
     */
-    constructor
-                                (
-                                )
-                                public
+    constructor() public
     {
         contractOwner = msg.sender;
         //adds first airline upon its constructor
         airlines[contractOwner] = Airline({
             isRegistered: true,
             account: contractOwner,
-            ownership: 0
+            ownership: 0,
+            funding: 0
         });
         emit RegisterAirline(contractOwner);   // Log airline registration event
     }
@@ -93,7 +92,7 @@ contract FlightSuretyData is Ownable {
 
     modifier requireIsCallerAuthorized()
     {
-        require(authorizedCaller[msg.sender] == 1, "Caller is not contract owner");
+        require(authorizedCaller[msg.sender] == 1, "Caller is not authorized to call this function");
         _;
     }
 
@@ -230,7 +229,8 @@ contract FlightSuretyData is Ownable {
                 airlines[airline] = Airline({
                     isRegistered: true,
                     account: airline,
-                    ownership: 0
+                    ownership: 0,
+                    funding: 0
                     });
 
                 emit RegisterAirline(airline);   // Log airline registration event
@@ -252,7 +252,8 @@ contract FlightSuretyData is Ownable {
                     airlines[airline] = Airline({
                         isRegistered: true,
                         account: airline,
-                        ownership: 0
+                        ownership: 0,
+                        funding: 0
                     });
 
                     multiCalls = new address[](0);
@@ -459,15 +460,7 @@ contract FlightSuretyData is Ownable {
      *      resulting in insurance payouts, the contract should be self-sustaining
      *
      */
-    function fund
-                            (
-                            address owner
-                            )
-                            public
-                            payable
-                            requireIsCallerAuthorized
-                            requireIsOperational
-
+    function fund(address owner) public payable requireIsCallerAuthorized requireIsOperational
     {
 
         require(msg.value >= 10, "Minimum amount is 10");
@@ -488,6 +481,9 @@ contract FlightSuretyData is Ownable {
 
     }
 
+    function fetchFunding(address airline) external view requireIsOperational requireIsCallerAuthorized returns (uint256){
+        return airlines[airline].funding;
+    }
 
     /**
        * @dev Fallback function for funding smart contract.
