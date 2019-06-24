@@ -357,6 +357,13 @@ contract FlightSuretyApp {
         return flightSuretyData.fetchFunding(airline);
     }
 
+    function isFunded(address airline) external view returns(bool){
+        return flightSuretyData.isFunded(airline);
+    }
+    function getNumberOfRegisteredAirlines() external view returns (uint256) {
+        return flightSuretyData.getNumberOfRegisteredAirlines();
+    }
+
     //endregion
 }
 
@@ -377,5 +384,7 @@ contract FlightSuretyData {
     function setTestingMode(bool mode) external {}
     function flightSuretyInfo(address passenger, string flight) external returns(uint256){}
 
-    function fetchFunding(address airline) external returns(uint256){}
+    function fetchFunding(address airline) external view returns(uint256){}
+    function isFunded(address airline) external view returns(bool){}
+    function getNumberOfRegisteredAirlines() external view returns (uint256){}
 }

@@ -25,9 +25,10 @@ contract FlightSuretyData is Ownable {
 
     struct Airline {
         bool isRegistered;      // Flag for testing existence in mapping
-        address account;        // Ethereum account
-        uint256 ownership;      // Track percentage of Smart Contract ownership based on initial contribution
+        //address account;        // Ethereum account
+        //uint256 ownership;      // Track percentage of Smart Contract ownership based on initial contribution
         uint256 funding;
+        bool isFunded;
     }
 
     struct Flight {
@@ -82,9 +83,10 @@ contract FlightSuretyData is Ownable {
         //adds first airline upon its constructor
         airlines[contractOwner] = Airline({
             isRegistered: true,
-            account: contractOwner,
-            ownership: 0,
-            funding: 0
+            //account: contractOwner,
+            //ownership: 0,
+            funding: 0,
+            isFunded: false
         });
         emit RegisterAirline(contractOwner);   // Log airline registration event
     }
@@ -210,60 +212,41 @@ contract FlightSuretyData is Ownable {
     *      Can only be called from FlightSuretyApp contract
     *
     */
-    function registerAirline
-    (
-        address airline,
-        address owner
-    )
-    external
-    requireIsCallerAuthorized
-    requireIsOperational
+    function registerAirline(address airline, address registeringAirline) external requireIsCallerAuthorized requireIsOperational
     {
+        // airline cannot be registered twice
         require(!airlines[airline].isRegistered, "Airline already registered");
-        if (airline != contractOwner) {
-            require(airlines[owner].isRegistered, "Airline trying to add no exists");
-            if (enabledAirlines.length < AIRLINE_LENGTH_LIMIT) {
-                require(airline != owner, "Under five airlines, an airline cannot register itself");
-                require(airlines[owner].ownership > 0, "Under five airlines, an airline without ownership cannot register other");
+        // only registered airlines can register other airlines
+        require(airlines[registeringAirline].isRegistered, "Airline trying to add no exists");
 
-                airlines[airline] = Airline({
-                    isRegistered: true,
-                    account: airline,
-                    ownership: 0,
-                    funding: 0
-                    });
-
-                emit RegisterAirline(airline);   // Log airline registration event
-
-            } else {
-                //Requirement #1
-                bool isDuplicate = false;
-                for(uint c=0; c<multiCalls.length; c++) {
-                    if (multiCalls[c] == msg.sender) {
-                        isDuplicate = true;
-                        break;
+        require(airlines[registeringAirline].isFunded, "Airlines need to be funded to be able register other airlines");
+        // up to the forth airline can be added without multiparty consensus
+        if (enabledAirlines.length < 4){
+            airlines[airline] = Airline({isRegistered: true, funding: 0, isFunded: false});
+        }
+        // else consensus is needed
+        else {
+            // check if registeringAirline airline has not voted already
+            bool isDuplicate = false;
+            for(uint c=0; c<multiCalls.length; c++) {
+                if (multiCalls[c] == registeringAirline) {
+                    isDuplicate = true;
+                    break;
                     }
                 }
 
-                require(!isDuplicate, "Caller has already called this function.");
-
-                multiCalls.push(msg.sender);
-                if (multiCalls.length >= (enabledAirlines.length.div(2))) {
-                    airlines[airline] = Airline({
-                        isRegistered: true,
-                        account: airline,
-                        ownership: 0,
-                        funding: 0
-                    });
-
-                    multiCalls = new address[](0);
-                    emit RegisterAirline(airline);   // Log airline registration event
-
-                }
+            require(!isDuplicate, "Caller has already voted");
+            // add registeringAirline to the list of airlines that have already voted.
+            multiCalls.push(registeringAirline);
+            // if half of the airlines have voted, the new airline is accepted
+            if (multiCalls.length == (enabledAirlines.length.div(2))) {
+                // new airline is registered without funding
+                airlines[airline] = Airline({isRegistered: true, funding: 0, isFunded: false});
+                // the voters array is reset
+                multiCalls = new address[](0);
+                //emit RegisterAirline(airline);   // Log airline registration event
             }
         }
-
-
     }
    /**
     * @dev Add an airline to the registration queue
@@ -332,17 +315,10 @@ contract FlightSuretyData is Ownable {
       *
       * @return Airline ownership
      */
-    function getAirlineOwnership(
-        address airline
-    )
-    external
-    view
-    requireIsCallerAuthorized
-    requireIsOperational
-    returns(uint256)
-    {
-        return airlines[airline].ownership;
-    }
+    //function getAirlineOwnership(address airline) external view requireIsCallerAuthorized requireIsOperational returns(uint256)
+    //{
+      //  return airlines[airline].ownership;
+    //}
 
     /**
      * @dev Buy insurance for a flight
@@ -471,11 +447,11 @@ contract FlightSuretyData is Ownable {
         funds[owner] = 0;
         owner.transfer(totalAmount);
 
-        if (airlines[owner].ownership != 1) {
+        if (!airlines[owner].isFunded) {
             enabledAirlines.push(owner);
         }
 
-        airlines[owner].ownership = 1;
+        airlines[owner].isFunded = true;
 
         funds[owner] = totalAmount;
 
@@ -483,6 +459,14 @@ contract FlightSuretyData is Ownable {
 
     function fetchFunding(address airline) external view requireIsOperational requireIsCallerAuthorized returns (uint256){
         return airlines[airline].funding;
+    }
+
+    function isFunded(address airline) external view requireIsOperational requireIsCallerAuthorized returns (bool){
+        return airlines[airline].isFunded;
+    }
+
+    function getNumberOfRegisteredAirlines() requireIsOperational requireIsCallerAuthorized external view returns (uint256) {
+        return enabledAirlines.length;
     }
 
     /**
