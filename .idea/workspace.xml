@@ -20,17 +20,17 @@
       <file pinned="false" current-in-tab="false">
         <entry file="file://$PROJECT_DIR$/../udacity_bnc_flight_surety/contracts/FlightSuretyApp.sol">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="86">
+            <state relative-caret-position="143">
               <caret line="363" column="62" selection-start-line="363" selection-start-column="62" selection-end-line="363" selection-end-column="62" />
             </state>
           </provider>
         </entry>
       </file>
-      <file pinned="false" current-in-tab="false">
+      <file pinned="false" current-in-tab="true">
         <entry file="file://$PROJECT_DIR$/../udacity_bnc_flight_surety/test/flightSurety2.js">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="306">
-              <caret line="62" column="90" lean-forward="true" selection-start-line="62" selection-start-column="90" selection-end-line="62" selection-end-column="90" />
+            <state relative-caret-position="155">
+              <caret line="95" column="39" selection-start-line="95" selection-start-column="39" selection-end-line="95" selection-end-column="39" />
             </state>
           </provider>
         </entry>
@@ -56,11 +56,11 @@
           </provider>
         </entry>
       </file>
-      <file pinned="false" current-in-tab="true">
+      <file pinned="false" current-in-tab="false">
         <entry file="file://$PROJECT_DIR$/../udacity_bnc_flight_surety/contracts/FlightSuretyData.sol">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="173">
-              <caret line="320" column="6" selection-start-line="320" selection-start-column="6" selection-end-line="320" selection-end-column="6" />
+            <state relative-caret-position="188">
+              <caret line="444" column="58" selection-start-line="444" selection-start-column="58" selection-end-line="444" selection-end-column="58" />
             </state>
           </provider>
         </entry>
@@ -151,8 +151,8 @@
         <option value="$PROJECT_DIR$/contracts/FlightSuretyApp.sol" />
         <option value="$PROJECT_DIR$/contracts/FlightSuretyData.sol" />
         <option value="$PROJECT_DIR$/../udacity_bnc_flight_surety/contracts/FlightSuretyApp.sol" />
-        <option value="$PROJECT_DIR$/../udacity_bnc_flight_surety/test/flightSurety2.js" />
         <option value="$PROJECT_DIR$/../udacity_bnc_flight_surety/contracts/FlightSuretyData.sol" />
+        <option value="$PROJECT_DIR$/../udacity_bnc_flight_surety/test/flightSurety2.js" />
       </list>
     </option>
   </component>
@@ -385,7 +385,7 @@
       <workItem from="1550227354106" duration="1308000" />
       <workItem from="1550286688816" duration="2089000" />
       <workItem from="1560683289047" duration="13404000" />
-      <workItem from="1561196974969" duration="13672000" />
+      <workItem from="1561196974969" duration="18857000" />
     </task>
     <task id="LOCAL-00001" summary="Add passengers partial work">
       <created>1549206272991</created>
@@ -412,7 +412,7 @@
     <servers />
   </component>
   <component name="TimeTrackingManager">
-    <option name="totallyTimeSpent" value="62472000" />
+    <option name="totallyTimeSpent" value="67657000" />
   </component>
   <component name="ToolWindowManager">
     <frame x="0" y="0" width="1920" height="1080" extended-state="0" />
@@ -587,24 +587,24 @@
         </state>
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/../udacity_bnc_flight_surety/test/flightSurety2.js">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="306">
-          <caret line="62" column="90" lean-forward="true" selection-start-line="62" selection-start-column="90" selection-end-line="62" selection-end-column="90" />
-        </state>
-      </provider>
-    </entry>
     <entry file="file://$PROJECT_DIR$/../udacity_bnc_flight_surety/contracts/FlightSuretyApp.sol">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="86">
+        <state relative-caret-position="143">
           <caret line="363" column="62" selection-start-line="363" selection-start-column="62" selection-end-line="363" selection-end-column="62" />
         </state>
       </provider>
     </entry>
     <entry file="file://$PROJECT_DIR$/../udacity_bnc_flight_surety/contracts/FlightSuretyData.sol">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="173">
-          <caret line="320" column="6" selection-start-line="320" selection-start-column="6" selection-end-line="320" selection-end-column="6" />
+        <state relative-caret-position="188">
+          <caret line="444" column="58" selection-start-line="444" selection-start-column="58" selection-end-line="444" selection-end-column="58" />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/../udacity_bnc_flight_surety/test/flightSurety2.js">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="155">
+          <caret line="95" column="39" selection-start-line="95" selection-start-column="39" selection-end-line="95" selection-end-column="39" />
         </state>
       </provider>
     </entry>

@@ -436,24 +436,23 @@ contract FlightSuretyData is Ownable {
      *      resulting in insurance payouts, the contract should be self-sustaining
      *
      */
-    function fund(address owner) public payable requireIsCallerAuthorized requireIsOperational
+    function fund(address airline) public payable requireIsCallerAuthorized requireIsOperational
     {
 
         require(msg.value >= 10, "Minimum amount is 10");
-        require(airlines[owner].isRegistered, "Airline not registered");
+        require(airlines[airline].isRegistered, "Airline not registered");
 
-        uint256 cacheAmount = funds[owner];
-        uint256 totalAmount = cacheAmount.add(msg.value);
-        funds[owner] = 0;
-        owner.transfer(totalAmount);
+        uint256 currentAmount = airlines[airline].funding;
+        airline.transfer(msg.value);
 
-        if (!airlines[owner].isFunded) {
-            enabledAirlines.push(owner);
+        // if airline has not been funded yet
+        if (!airlines[airline].isFunded) {
+            // declares it as funded
+            airlines[airline].isFunded = true;
+            // adds it to the list of airlines that can participate in the contract
+            enabledAirlines.push(airline);
         }
-
-        airlines[owner].isFunded = true;
-
-        funds[owner] = totalAmount;
+        airlines[airline].funding = currentAmount.add(msg.value);
 
     }
 
