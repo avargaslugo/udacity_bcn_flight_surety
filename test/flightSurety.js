@@ -72,119 +72,6 @@ contract('Flight Surety Tests', async (accounts) => {
         await config.flightSuretyApp.setOperatingStatus(true);
     });
 
-    it('function call is made when multi-party threshold is reached', async () => {
-
-        // ARRANGE
-        let airline1 = accounts[6];
-        let airline2 = accounts[7];
-        let airline3 = accounts[8];
-        let airline4 = accounts[9];
-
-        await config.flightSuretyApp.fund.sendTransaction(config.firstAirline, {from: config.firstAirline, "value": 10});
-
-
-        await config.flightSuretyApp.registerAirline.sendTransaction(airline1, {from: config.firstAirline});
-        await config.flightSuretyApp.registerAirline.sendTransaction(airline2, {from: config.firstAirline});
-        await config.flightSuretyApp.registerAirline.sendTransaction(airline3, {from: config.firstAirline});
-        await config.flightSuretyApp.registerAirline.sendTransaction(airline4, {from: config.firstAirline});
-
-
-
-        await config.flightSuretyApp.fund.sendTransaction(airline1, {from: config.firstAirline, "value": 10});
-        await config.flightSuretyApp.fund.sendTransaction(airline2, {from: config.firstAirline, "value": 10});
-        await config.flightSuretyApp.fund.sendTransaction(airline3, {from: config.firstAirline, "value": 10});
-        await config.flightSuretyApp.fund.sendTransaction(airline4, {from: config.firstAirline, "value": 10});
-
-        console.log("4 airlines added and funded");
-
-        let startStatus = await config.flightSuretyApp.isOperational.call();
-        let changeStatus = !startStatus;
-
-        console.log("Lockout status starting as: " + startStatus);
-
-        // ACT
-        await config.flightSuretyApp.setOperatingStatus(changeStatus, {from: airline1});
-        await config.flightSuretyApp.setOperatingStatus(changeStatus, {from: airline2});
-        console.log("5 airlines added and funded");
-
-        let newStatus = await config.flightSuretyApp.isOperational.call();
-        console.log("Lockout status changed to: " + newStatus);
-
-        // ASSERT
-        assert.equal(changeStatus, newStatus, "Multi-party call failed");
-
-
-        await config.flightSuretyApp.setOperatingStatus(!changeStatus, {from: airline1});
-        await config.flightSuretyApp.setOperatingStatus(!changeStatus, {from: airline2});
-        let newStatus2 = await config.flightSuretyApp.isOperational.call();
-
-        console.log("Lockout status reverted to: " + newStatus2);
-
-        assert.equal(newStatus2, !changeStatus, "Multi-party call failed");
-
-
-    });
-
-    it('(airline) cannot register an Airline using registerAirline() if it is not funded', async () => {
-
-        let newAirline = accounts[2];
-        await config.flightSuretyApp.registerAirline.sendTransaction(accounts[4], {from: config.firstAirline});
-
-        try {
-            await config.flightSuretyApp.registerAirline.sendTransaction(newAirline, {from: accounts[10]});
-        }
-        catch(e) {}
-
-        let result = await config.flightSuretyApp.isAirline.call(newAirline);
-        assert.equal(result, false, "Airline should not be able to register another airline if it hasn't provided funding");
-    });
-
-
-    it('(airline) can be funded', async () => {
-        let previousAirline = config.firstAirline;
-
-        try {
-            await config.flightSuretyApp.fund.sendTransaction(previousAirline, {from: config.firstAirline, "value": 10});
-        }
-        catch(e) {}
-
-        let result = await config.flightSuretyApp.getAirlineOwnership(previousAirline);
-        assert.equal(result.toString() === "1", true, "Airline should not be able to register another airline if it hasn't provided funding");
-
-    });
-
-    // it('(airline) can add other airlines after being funded', async () => {
-    //     let previousAirline = config.firstAirline;
-    //     let newAirline = accounts[1];
-    //
-    //     try {
-    //         await config.flightSuretyApp.registerAirline.sendTransaction(newAirline, {from: previousAirline});
-    //     }
-    //     catch(e) {}
-    //
-    //     let result = await config.flightSuretyApp.isAirline.call(newAirline);
-    //     assert.equal(result, true, "Airline should not be able to register another airline if it hasn't provided funding");
-    //
-    // });
-
-    //
-    // it('(airline) can add up to complete 4 airlines without assuming consensus', async () => {
-    //     let previousAirline = config.firstAirline;
-    //     let newAirline2 = accounts[2];
-    //     let newAirline3 = accounts[3];
-    //
-    //     try {
-    //         await config.flightSuretyApp.registerAirline.sendTransaction(newAirline2, {from: previousAirline});
-    //         await config.flightSuretyApp.registerAirline.sendTransaction(newAirline3, {from: previousAirline});
-    //     }
-    //
-    //     catch(e) {}
-    //
-    //     let result = await config.flightSuretyApp.isAirline.call(newAirline2);
-    //     let result2 = await config.flightSuretyApp.isAirline.call(newAirline3);
-    //     assert.equal(result && result2, true, "Airline should not be able to register another airline if it hasn't provided funding");
-    //
-    // });
 
     it(`(flight) passenger can buy more than 1 ether on surety for a flight`, async function () {
 
@@ -232,8 +119,6 @@ contract('Flight Surety Tests', async (accounts) => {
         assert.equal(errored, true, "Surety value has not changed");
 
     });
-
-
 
 
 });
