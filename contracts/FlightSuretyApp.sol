@@ -14,6 +14,7 @@ contract FlightSuretyApp {
 
     address private contractOwner;          // Account used to deploy contract
     FlightSuretyData flightSuretyData;
+    bool operational = true;
 
     /********************************************************************************************/
     /*                                       DATA VARIABLES                                     */
@@ -37,11 +38,7 @@ contract FlightSuretyApp {
     * @dev Contract constructor
     *
     */
-    constructor
-                                (
-                                    address dataContract
-                                )
-                                public
+    constructor(address dataContract)public
     {
         contractOwner = msg.sender;
         flightSuretyData = FlightSuretyData(dataContract);
@@ -55,8 +52,18 @@ contract FlightSuretyApp {
     // Modifiers help avoid duplication of code. They are typically used to validate something
     // before a function is allowed to be executed.
 
+    modifier requireIsOperational()
+    {
+        require(operational, "Contract is currently not operational");
+        _;
+    }
 
 
+    modifier requireContractOwner()
+    {
+        require(msg.sender == contractOwner, "Caller is not contract owner");
+        _;
+    }
 
     /********************************************************************************************/
     /*                                       EVENT DEFINITIONS                                  */
@@ -70,7 +77,7 @@ contract FlightSuretyApp {
     /********************************************************************************************/
 
 
-    function isOperational () external view returns(bool) {
+    function isOperational() external view returns(bool) {
         return flightSuretyData.isOperational();
     }
 
@@ -78,6 +85,9 @@ contract FlightSuretyApp {
         return flightSuretyData.getActiveAirlines();
     }
 
+    function setOperatingStatus(bool mode) external requireContractOwner {
+        operational = false;
+    }
 
 
     /********************************************************************************************/
@@ -90,51 +100,28 @@ contract FlightSuretyApp {
     * @dev Register a future flight for insuring.
     *
     */
-    function registerFlight
-                                (
-                                )
-                                external
-                                pure
-    {
-
-    }
+    function registerFlight() external pure {}
 
 
     /**
      * @dev Called after oracle has updated flight status
      *
      */
-    function processFlightStatus
-                                (
-                                    address airline,
-                                    string memory flight,
-                                    uint256 timestamp,
-                                    uint8 statusCode
-                                )
-                                internal
-                                pure
+    function processFlightStatus(address airline, string memory flight, uint256 timestamp, uint8 statusCode) internal pure
     {
     }
 
 
     // Generate a request for oracles to fetch flight information
-    function fetchFlightStatus
-                        (
-                            address airline,
-                            string flight,
-                            uint256 timestamp
-                        )
-                        external
+    function fetchFlightStatus(address airline, string flight, uint256 timestamp) external
     {
         uint8 index = getRandomIndex(msg.sender);
-
         // Generate a unique key for storing the request
         bytes32 key = keccak256(abi.encodePacked(index, airline, flight, timestamp));
         oracleResponses[key] = ResponseInfo({
                                                 requester: msg.sender,
                                                 isOpen: true
                                             });
-
         emit OracleRequest(index, airline, flight, timestamp);
     }
 
@@ -166,7 +153,6 @@ contract FlightSuretyApp {
                                                         // This lets us group responses and identify
                                                         // the response that majority of the oracles
     }
-
     // Track all oracle responses
     // Key = hash(index, flight, timestamp)
     mapping(bytes32 => ResponseInfo) private oracleResponses;
@@ -184,32 +170,17 @@ contract FlightSuretyApp {
 
 
     // Register an oracle with the contract
-    function registerOracle
-                            (
-                            )
-                            external
-                            payable
+    function registerOracle() external payable requireIsOperational
     {
         // Require registration fee
         require(msg.value >= REGISTRATION_FEE, "Registration fee is required");
-
         uint8[3] memory indexes = generateIndexes(msg.sender);
-
-        oracles[msg.sender] = Oracle({
-                                        isRegistered: true,
-                                        indexes: indexes
-                                    });
+        oracles[msg.sender] = Oracle({isRegistered: true, indexes: indexes});
     }
 
-    function getMyIndexes
-                            (
-                            )
-                            view
-                            external
-                            returns(uint8[3])
+    function getMyIndexes() view external returns(uint8[3])
     {
         require(oracles[msg.sender].isRegistered, "Not registered as an oracle");
-
         return oracles[msg.sender].indexes;
     }
 
@@ -220,15 +191,8 @@ contract FlightSuretyApp {
     // For the response to be accepted, there must be a pending request that is open
     // and matches one of the three Indexes randomly assigned to the oracle at the
     // time of registration (i.e. uninvited oracles are not welcome)
-    function submitOracleResponse
-                        (
-                            uint8 index,
-                            address airline,
-                            string flight,
-                            uint256 timestamp,
-                            uint8 statusCode
-                        )
-                        external
+    function submitOracleResponse(uint8 index, address airline, string flight, uint256 timestamp, uint8 statusCode)
+    external requireIsOperational
     {
         require((oracles[msg.sender].indexes[0] == index) || (oracles[msg.sender].indexes[1] == index) || (oracles[msg.sender].indexes[2] == index), "Index does not match oracle request");
 
@@ -251,26 +215,13 @@ contract FlightSuretyApp {
     }
 
 
-    function getFlightKey
-                        (
-                            address airline,
-                            string flight,
-                            uint256 timestamp
-                        )
-                        pure
-                        internal
-                        returns(bytes32)
+    function getFlightKey(address airline, string flight, uint256 timestamp) pure internal returns(bytes32)
     {
         return keccak256(abi.encodePacked(airline, flight, timestamp));
     }
 
     // Returns array of three non-duplicating integers from 0-9
-    function generateIndexes
-                            (
-                                address account
-                            )
-                            internal
-                            returns(uint8[3])
+    function generateIndexes(address account) internal returns(uint8[3])
     {
         uint8[3] memory indexes;
         indexes[0] = getRandomIndex(account);
@@ -289,22 +240,14 @@ contract FlightSuretyApp {
     }
 
     // Returns array of three non-duplicating integers from 0-9
-    function getRandomIndex
-                            (
-                                address account
-                            )
-                            internal
-                            returns (uint8)
+    function getRandomIndex(address account) internal returns (uint8)
     {
         uint8 maxValue = 10;
-
         // Pseudo random number...the incrementing nonce adds variation
         uint8 random = uint8(uint256(keccak256(abi.encodePacked(blockhash(block.number - nonce++), account))) % maxValue);
-
         if (nonce > 250) {
             nonce = 0;  // Can only fetch blockhashes for last 256 blocks so we adapt
         }
-
         return random;
     }
 
@@ -312,56 +255,56 @@ contract FlightSuretyApp {
 
 // region FlightSuretyData encapsulations
 
-    function setOperatingStatus(bool mode) external {
-        flightSuretyData.setOperatingStatus(mode, msg.sender);
-    }
 
-    function registerAirline(address airline) external {
+
+    function registerAirline(address airline) external requireIsOperational{
         flightSuretyData.registerAirline(airline, msg.sender);
     }
 
-    function fund(address airline) public payable {
+    function fund(address airline) public payable requireIsOperational{
         flightSuretyData.fund.value(msg.value)(airline);
     }
 
-    function isAirline(address airline) external view returns(bool){
+    function isAirline(address airline) external view requireIsOperational returns(bool){
         return flightSuretyData.isAirline(airline);
     }
 
-    function getAirlineOwnership(address airline) external view returns(uint256){
+    function getAirlineOwnership(address airline) external view requireIsOperational returns(uint256){
         return flightSuretyData.getAirlineOwnership(airline);
     }
 
-    function registerFlight(address airline, string flightId, uint256 timestamp) external {
+    function registerFlight(address airline, string flightId, uint256 timestamp) external requireIsOperational {
         flightSuretyData.registerFlight(airline, flightId, timestamp);
     }
 
-    function setTestingMode(bool mode) external {
+    function setTestingMode(bool mode) external requireIsOperational{
         return flightSuretyData.setTestingMode(mode);
     }
 
-    function buy(address passenger, string flight) external payable {
+    function buy(address passenger, string flight) external payable requireIsOperational{
         flightSuretyData.buy.value(msg.value)(passenger, flight);
     }
 
-    function flightSuretyInfo(string flight) external returns(uint256){
+    function flightSuretyInfo(string flight) external requireIsOperational returns(uint256){
         return flightSuretyData.flightSuretyInfo(msg.sender, flight);
     }
 
-    function creditInsurees(address passenger, string flight) external payable {
-        flightSuretyData.creditInsurees(passenger, flight);
-
+    function creditInsurees(address passenger, string flight) external payable requireIsOperational {
+        flightSuretyData.creditPassenger(passenger, flight);
     }
 
-    function fetchFunding(address airline) external view returns(uint256) {
+    function fetchFunding(address airline) external view requireIsOperational returns(uint256) {
         return flightSuretyData.fetchFunding(airline);
     }
 
-    function isFunded(address airline) external view returns(bool){
+    function isFunded(address airline) external view requireIsOperational returns(bool){
         return flightSuretyData.isFunded(airline);
     }
-    function getNumberOfRegisteredAirlines() external view returns (uint256) {
+    function getNumberOfRegisteredAirlines() external view requireIsOperational returns (uint256) {
         return flightSuretyData.getNumberOfRegisteredAirlines();
+    }
+    function getPassengerCredit() external view requireIsOperational returns (uint256){
+        return flightSuretyData.getPassengerCredit(msg.sender);
     }
 
     //endregion
@@ -376,7 +319,7 @@ contract FlightSuretyData {
     function registerAirline(address airline, address owner) external {}
     function fund(address owner) public payable {}
     function buy(address passenger, string flight) public payable {}
-    function creditInsurees(address passenger, string flight) external payable{}
+    function creditPassenger(address passenger, string flight) external payable{}
 
     function isAirline(address airline) external view returns(bool){}
     function getAirlineOwnership(address airline) external view returns(uint256){}
@@ -387,4 +330,6 @@ contract FlightSuretyData {
     function fetchFunding(address airline) external view returns(uint256){}
     function isFunded(address airline) external view returns(bool){}
     function getNumberOfRegisteredAirlines() external view returns (uint256){}
+
+    function getPassengerCredit(address passenger) external view returns (uint256){}
 }
