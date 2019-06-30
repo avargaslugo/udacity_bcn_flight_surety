@@ -34,7 +34,7 @@ contract('Oracles', async (accounts) => {
     }
   });
 
-  /*
+
   it('can request flight status', async () => {
     
     // ARRANGE
@@ -69,7 +69,7 @@ contract('Oracles', async (accounts) => {
     }
 
 
-  }); */
+  });
 
 
  
